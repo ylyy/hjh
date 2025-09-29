@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>AI Copy → Click → Type — Options</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 24px; max-width: 720px; }
+      .row { margin-bottom: 16px; }
+      label { display: block; font-weight: 600; margin-bottom: 6px; }
+      input[type="text"], input[type="password"], textarea, select { width: 100%; padding: 8px; font: inherit; }
+      textarea { min-height: 120px; }
+      .actions { margin-top: 24px; display: flex; gap: 12px; }
+      button { padding: 8px 14px; font: inherit; cursor: pointer; }
+      .hint { color: #555; font-size: 12px; }
+      .success { color: #0a0; }
+      .error { color: #a00; }
+    </style>
+  </head>
+  <body>
+    <h1>AI Copy → Click → Type — Options</h1>
+    <div class="row">
+      <label for="apiKey">OpenAI API Key</label>
+      <input type="password" id="apiKey" placeholder="sk-..." />
+      <div class="hint">Stored using Chrome sync storage.</div>
+    </div>
+
+    <div class="row">
+      <label for="model">Model</label>
+      <input type="text" id="model" value="gpt-4o-mini" />
+    </div>
+
+    <div class="row">
+      <label for="secondsPerLine">Seconds per line</label>
+      <input type="number" id="secondsPerLine" value="10" min="1" max="60" />
+    </div>
+
+    <div class="row">
+      <label for="systemPrompt">System prompt</label>
+      <textarea id="systemPrompt">You are an expert coding assistant. Provide concise, correct solutions with minimal explanation. Return plain text suitable for pasting. Avoid markdown fences unless necessary.</textarea>
+    </div>
+
+    <div class="actions">
+      <button id="save">Save</button>
+      <span id="status"></span>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+  </html>
+
