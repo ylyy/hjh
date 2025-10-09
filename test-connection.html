@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI助手连接测试工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+
+        .result-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .result-content {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .test-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .log-entry.success { color: #48bb78; }
+        .log-entry.error { color: #f56565; }
+        .log-entry.info { color: #4299e1; }
+        .log-entry.warning { color: #ed8936; }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-card h4 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 13px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI助手连接测试工具</h1>
+        <p class="subtitle">测试C#测试工具与Electron AI助手的通信</p>
+
+        <!-- 配置区 -->
+        <div class="config-section">
+            <h3>配置</h3>
+            <div class="form-group">
+                <label for="apiUrl">API地址</label>
+                <input type="text" id="apiUrl" value="http://localhost:8765" placeholder="http://localhost:8765">
+            </div>
+            <div class="form-group">
+                <label for="apiToken">API Token</label>
+                <input type="text" id="apiToken" value="your-secret-token" placeholder="your-secret-token">
+            </div>
+        </div>
+
+        <!-- 测试按钮 -->
+        <div class="button-group">
+            <button class="btn-primary" onclick="testHealth()">
+                🔍 测试连接
+            </button>
+            <button class="btn-primary" onclick="testAnalyze()">
+                🧪 测试分析
+            </button>
+            <button class="btn-secondary" onclick="clearLog()">
+                🗑️ 清空日志
+            </button>
+        </div>
+
+        <!-- 结果显示 -->
+        <div class="result-section">
+            <h3>测试日志</h3>
+            <div id="testLog" class="test-log">
+                <div class="log-entry info">等待测试...</div>
+            </div>
+        </div>
+
+        <!-- 功能说明 -->
+        <div class="result-section">
+            <h3>功能说明</h3>
+            <div class="features">
+                <div class="feature-card">
+                    <h4>🔍 测试连接</h4>
+                    <p>检查AI助手服务是否正常运行</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🧪 测试分析</h4>
+                    <p>发送示例错误日志进行AI分析</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 实时反馈</h4>
+                    <p>查看详细的请求和响应信息</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const logElement = document.getElementById('testLog');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(entry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            logElement.innerHTML = '<div class="log-entry info">日志已清空，等待测试...</div>';
+        }
+
+        async function testHealth() {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const apiToken = document.getElementById('apiToken').value.trim();
+
+            log('开始健康检查...', 'info');
+            log(`API地址: ${apiUrl}/api/health`, 'info');
+
+            try {
+                const response = await fetch(`${apiUrl}/api/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log('✅ 连接成功！', 'success');
+                    log(`服务状态: ${data.status}`, 'success');
+                    log(`服务名称: ${data.service}`, 'info');
+                    log(`版本号: ${data.version}`, 'info');
+                    log(`时间戳: ${new Date(data.timestamp).toLocaleString()}`, 'info');
+                } else {
+                    log(`❌ 连接失败 (HTTP ${response.status})`, 'error');
+                    log(`错误信息: ${data.error || '未知错误'}`, 'error');
+                }
+            } catch (error) {
+                log('❌ 连接失败', 'error');
+                log(`错误详情: ${error.message}`, 'error');
+                log('提示: 请确保Electron应用正在运行', 'warning');
+            }
+        }
+
+        async function testAnalyze() {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const apiToken = document.getElementById('apiToken').value.trim();
+
+            log('开始测试AI分析...', 'info');
+            log(`API地址: ${apiUrl}/api/analyze-error`, 'info');
+
+            // 示例错误日志
+            const testErrorLog = `System.NullReferenceException: Object reference not set to an instance of an object.
+   at TestTool.MainForm.btnRunTest_Click(Object sender, EventArgs e)
+   at System.Windows.Forms.Control.OnClick(EventArgs e)
+   at System.Windows.Forms.Button.OnClick(EventArgs e)
+
+错误发生在测试用例执行过程中，疑似测试对象未正确初始化。`;
+
+            const requestBody = {
+                errorLog: testErrorLog,
+                context: {
+                    timestamp: new Date().toISOString(),
+                    testCase: 'Test_Connection',
+                    environment: {
+                        browser: navigator.userAgent,
+                        platform: navigator.platform
+                    }
+                },
+                options: {
+                    language: 'zh-CN',
+                    detailLevel: 'normal'
+                }
+            };
+
+            log('请求体:', 'info');
+            log(JSON.stringify(requestBody, null, 2), 'info');
+
+            try {
+                const startTime = Date.now();
+                
+                const response = await fetch(`${apiUrl}/api/analyze-error`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiToken}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    log(`✅ 分析成功！(耗时: ${duration}ms)`, 'success');
+                    log('--- AI分析结果 ---', 'success');
+                    log(data.solution, 'info');
+                    log('--- 分析结束 ---', 'success');
+                } else {
+                    log(`❌ 分析失败 (HTTP ${response.status})`, 'error');
+                    log(`错误信息: ${data.error || '未知错误'}`, 'error');
+                    
+                    if (response.status === 401) {
+                        log('提示: API Token可能不正确', 'warning');
+                    }
+                }
+            } catch (error) {
+                log('❌ 请求失败', 'error');
+                log(`错误详情: ${error.message}`, 'error');
+                log('提示: 请确保Electron应用正在运行且API服务已启动', 'warning');
+            }
+        }
+
+        // 页面加载完成后自动测试连接
+        window.addEventListener('load', () => {
+            log('测试工具已就绪', 'success');
+            log('提示: 请先启动Electron AI助手应用', 'info');
+        });
+    </script>
+</body>
+</html>

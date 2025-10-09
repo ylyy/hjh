@@ -1,0 +1,24 @@
+{
+  "aiService": {
+    "apiBaseUrl": "http://localhost:8765",
+    "apiToken": "your-secret-token-change-this",
+    "timeout": 30,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  },
+  "electronApp": {
+    "path": "C:\\Program Files\\AIAssistant\\AIAssistant.exe",
+    "autoStart": true,
+    "silentMode": true
+  },
+  "logging": {
+    "enabled": true,
+    "logDirectory": "./AIAnalysisLogs",
+    "keepDays": 30
+  },
+  "ui": {
+    "language": "zh-CN",
+    "theme": "dark",
+    "showNotifications": true
+  }
+}
