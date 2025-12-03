@@ -1,6 +1,7 @@
 package com.productivity.assistant.agent
 
 import android.content.Context
+import com.productivity.assistant.ai.AIService
 import com.productivity.assistant.data.repository.AppUsageRepository
 import com.productivity.assistant.data.repository.GoalRepository
 import kotlinx.coroutines.flow.first
@@ -21,6 +22,8 @@ class EmotionAgent(
     private val goalRepository: GoalRepository
 ) {
     
+    private val aiService = AIService(context)
+    
     /**
      * 分析用户当前情绪状态
      */
@@ -36,12 +39,15 @@ class EmotionAgent(
         // 综合判断情绪状态
         val emotionType = determineEmotionType(stressLevel, motivationLevel, focusLevel)
         
+        // 使用AI生成个性化建议
+        val recommendation = generateRecommendation(emotionType, recentUsage, goals)
+        
         return EmotionState(
             type = emotionType,
             stressLevel = stressLevel,
             motivationLevel = motivationLevel,
             focusLevel = focusLevel,
-            recommendation = generateRecommendation(emotionType, recentUsage, goals)
+            recommendation = recommendation
         )
     }
     
@@ -135,20 +141,39 @@ class EmotionAgent(
     }
     
     /**
-     * 生成个性化建议
+     * 生成个性化建议（使用AI增强）
      */
-    private fun generateRecommendation(
+    private suspend fun generateRecommendation(
         emotionType: EmotionType,
         usage: RecentUsageStats,
         goals: List<com.productivity.assistant.data.entity.Goal>
     ): String {
-        return when (emotionType) {
-            EmotionType.STRESSED -> "检测到您可能压力较大，建议先休息一下，调整状态"
-            EmotionType.UNMOTIVATED -> "看起来缺乏动力，试试设置一个小目标，完成后给自己奖励"
-            EmotionType.DISTRACTED -> "注意力有些分散，建议关闭通知，专注当前任务"
-            EmotionType.MOTIVATED -> "状态很好！继续保持这个节奏"
-            EmotionType.CALM -> "状态平稳，适合进行深度工作"
-            EmotionType.NEUTRAL -> "状态正常，继续努力"
+        // 使用AI生成个性化建议
+        val appUsagePattern = "娱乐${usage.entertainmentTime}小时，工作${usage.workTime}小时，应用切换${usage.appSwitchFrequency}次"
+        val workCompletionRate = goals.count { it.isCompleted }.toFloat() / goals.size.coerceAtLeast(1)
+        val stressIndicators = when (emotionType) {
+            EmotionType.STRESSED -> "压力较高"
+            EmotionType.UNMOTIVATED -> "缺乏动力"
+            EmotionType.DISTRACTED -> "注意力分散"
+            else -> "状态正常"
+        }
+        
+        return try {
+            aiService.analyzeEmotionAndAdvise(
+                appUsagePattern = appUsagePattern,
+                workCompletionRate = workCompletionRate,
+                stressIndicators = stressIndicators
+            )
+        } catch (e: Exception) {
+            // 如果AI失败，使用默认建议
+            when (emotionType) {
+                EmotionType.STRESSED -> "检测到您可能压力较大，建议先休息一下，调整状态"
+                EmotionType.UNMOTIVATED -> "看起来缺乏动力，试试设置一个小目标，完成后给自己奖励"
+                EmotionType.DISTRACTED -> "注意力有些分散，建议关闭通知，专注当前任务"
+                EmotionType.MOTIVATED -> "状态很好！继续保持这个节奏"
+                EmotionType.CALM -> "状态平稳，适合进行深度工作"
+                EmotionType.NEUTRAL -> "状态正常，继续努力"
+            }
         }
     }
     

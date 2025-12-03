@@ -15,7 +15,8 @@ data class Achievement(
     val progress: Int = 0,
     val target: Int,
     val isUnlocked: Boolean = false,
-    val iconResId: Int = 0
+    val iconResId: Int = 0,
+    val iconImagePath: String? = null // AI生成的图片路径
 )
 
 enum class AchievementType {

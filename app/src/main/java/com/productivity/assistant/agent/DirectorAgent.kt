@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import com.productivity.assistant.ai.AIService
+import com.productivity.assistant.data.entity.Goal
 import com.productivity.assistant.data.repository.AppUsageRepository
 import com.productivity.assistant.data.repository.GoalRepository
 import com.productivity.assistant.service.AppUsageMonitorService
@@ -30,6 +32,8 @@ class DirectorAgent(
     private val goalRepository: GoalRepository,
     private val reminderService: ReminderService
 ) {
+    
+    private val aiService = AIService(context)
     
     private val scope = CoroutineScope(Dispatchers.Default)
     private var entertainmentStartTime: Long = 0
@@ -109,13 +113,18 @@ class DirectorAgent(
     private suspend fun executeIntervention(level: InterventionLevel, durationMinutes: Long) {
         val activeGoals = goalRepository.getActiveGoals().first()
         val incompleteGoals = activeGoals.filter { !it.isCompleted }
+        val todayWorkTime = getTodayWorkTime()
+        val goalTitles = incompleteGoals.map { it.title }
         
         when (level) {
             InterventionLevel.MILD -> {
-                // 温和提醒
+                // 温和提醒 - 使用AI生成个性化内容
                 reminderService.showMildReminder(
                     durationMinutes = durationMinutes.toInt(),
-                    incompleteGoalsCount = incompleteGoals.size
+                    incompleteGoalsCount = incompleteGoals.size,
+                    workTime = todayWorkTime,
+                    incompleteGoals = goalTitles,
+                    emotionState = "正常"
                 )
             }
             InterventionLevel.MODERATE -> {

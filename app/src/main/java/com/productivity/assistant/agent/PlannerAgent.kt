@@ -1,6 +1,7 @@
 package com.productivity.assistant.agent
 
 import android.content.Context
+import com.productivity.assistant.ai.AIService
 import com.productivity.assistant.data.entity.Goal
 import com.productivity.assistant.data.entity.GoalType
 import com.productivity.assistant.data.repository.GoalRepository
@@ -26,56 +27,91 @@ class PlannerAgent(
 ) {
     
     private val scope = CoroutineScope(Dispatchers.Default)
+    private val aiService = AIService(context)
     
     /**
-     * 分析用户数据并生成建议目标
+     * 分析用户数据并生成建议目标（使用AI增强）
      */
     suspend fun analyzeAndSuggestGoals(): List<GoalSuggestion> {
         val activeGoals = goalRepository.getActiveGoals().first()
         val recentUsage = goalRepository.getRecentUsageStats(7) // 最近7天
         
-        val suggestions = mutableListOf<GoalSuggestion>()
+        // 使用AI生成目标建议
+        val workHistory = "平均每日工作${recentUsage.averageWorkHours}小时，娱乐${recentUsage.averageEntertainmentTime}小时"
+        val currentGoals = activeGoals.map { it.title }
+        val userPreferences = "目标完成率${(recentUsage.goalCompletionRate * 100).toInt()}%"
         
-        // 分析工作模式
-        val avgWorkHours = recentUsage.averageWorkHours
-        if (avgWorkHours < 4) {
-            suggestions.add(
-                GoalSuggestion(
-                    title = "增加每日工作时间",
-                    description = "建议设置每日工作4小时以上的目标",
-                    type = GoalType.DAILY,
-                    targetValue = 4,
-                    unit = "小时"
-                )
+        val aiSuggestions = try {
+            aiService.generateGoalSuggestions(
+                workHistory = workHistory,
+                currentGoals = currentGoals,
+                userPreferences = userPreferences
             )
+        } catch (e: Exception) {
+            emptyList()
         }
         
-        // 分析娱乐时间
-        val avgEntertainmentTime = recentUsage.averageEntertainmentTime
-        if (avgEntertainmentTime > 2) {
-            suggestions.add(
-                GoalSuggestion(
-                    title = "减少娱乐时间",
-                    description = "建议将每日娱乐时间控制在2小时以内",
-                    type = GoalType.DAILY,
-                    targetValue = 2,
-                    unit = "小时"
-                )
+        // 将AI建议转换为GoalSuggestion对象
+        val suggestions = aiSuggestions.mapIndexed { index, title ->
+            GoalSuggestion(
+                title = title,
+                description = "AI智能建议",
+                type = GoalType.DAILY,
+                targetValue = when {
+                    title.contains("小时") -> 4
+                    title.contains("分钟") -> 30
+                    title.contains("任务") -> 3
+                    else -> 1
+                },
+                unit = when {
+                    title.contains("小时") -> "小时"
+                    title.contains("分钟") -> "分钟"
+                    title.contains("任务") -> "个任务"
+                    else -> "项"
+                }
             )
-        }
+        }.toMutableList()
         
-        // 分析目标完成率
-        val completionRate = recentUsage.goalCompletionRate
-        if (completionRate < 0.7) {
-            suggestions.add(
-                GoalSuggestion(
-                    title = "提高目标完成率",
-                    description = "建议设置更合理的目标，提高完成率",
-                    type = GoalType.DAILY,
-                    targetValue = 3,
-                    unit = "个任务"
+        // 如果AI没有生成足够的建议，添加默认建议
+        if (suggestions.isEmpty()) {
+            val avgWorkHours = recentUsage.averageWorkHours
+            if (avgWorkHours < 4) {
+                suggestions.add(
+                    GoalSuggestion(
+                        title = "增加每日工作时间",
+                        description = "建议设置每日工作4小时以上的目标",
+                        type = GoalType.DAILY,
+                        targetValue = 4,
+                        unit = "小时"
+                    )
                 )
-            )
+            }
+            
+            val avgEntertainmentTime = recentUsage.averageEntertainmentTime
+            if (avgEntertainmentTime > 2) {
+                suggestions.add(
+                    GoalSuggestion(
+                        title = "减少娱乐时间",
+                        description = "建议将每日娱乐时间控制在2小时以内",
+                        type = GoalType.DAILY,
+                        targetValue = 2,
+                        unit = "小时"
+                    )
+                )
+            }
+            
+            val completionRate = recentUsage.goalCompletionRate
+            if (completionRate < 0.7) {
+                suggestions.add(
+                    GoalSuggestion(
+                        title = "提高目标完成率",
+                        description = "建议设置更合理的目标，提高完成率",
+                        type = GoalType.DAILY,
+                        targetValue = 3,
+                        unit = "个任务"
+                    )
+                )
+            }
         }
         
         return suggestions

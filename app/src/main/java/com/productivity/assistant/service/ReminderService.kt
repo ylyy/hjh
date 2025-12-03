@@ -8,12 +8,19 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.productivity.assistant.R
+import com.productivity.assistant.ai.AIService
 import com.productivity.assistant.data.entity.Goal
 import com.productivity.assistant.ui.MainActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class ReminderService(private val context: Context) {
     
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private val aiService = AIService(context)
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     
     init {
         createNotificationChannel()
@@ -35,15 +42,37 @@ class ReminderService(private val context: Context) {
     /**
      * 温和提醒
      */
-    fun showMildReminder(durationMinutes: Int, incompleteGoalsCount: Int) {
-        val content = context.getString(
+    fun showMildReminder(
+        durationMinutes: Int,
+        incompleteGoalsCount: Int,
+        workTime: Float = 0f,
+        incompleteGoals: List<String> = emptyList(),
+        emotionState: String = "正常"
+    ) {
+        // 使用AI生成个性化提醒
+        serviceScope.launch {
+            val aiContent = aiService.generatePersonalizedReminder(
+                entertainmentTime = durationMinutes,
+                workTime = workTime,
+                incompleteGoals = incompleteGoals,
+                emotionState = emotionState
+            )
+            
+            showNotification(
+                title = context.getString(R.string.reminder_title),
+                content = aiContent,
+                priority = NotificationCompat.PRIORITY_DEFAULT
+            )
+        }
+        
+        // 如果AI生成失败，使用默认内容
+        val defaultContent = context.getString(
             R.string.reminder_entertainment_time,
             durationMinutes
         )
-        
         showNotification(
             title = context.getString(R.string.reminder_title),
-            content = content,
+            content = defaultContent,
             priority = NotificationCompat.PRIORITY_DEFAULT
         )
     }
