@@ -134,6 +134,17 @@ class AIService(private val context: Context) {
     }
     
     /**
+     * 生成文本用于分析（内部方法）
+     */
+    suspend fun generateTextForAnalysis(prompt: String): String {
+        return modelScopeClient.generateText(
+            prompt = prompt,
+            maxTokens = 1000,
+            temperature = 0.7
+        ).getOrElse { "" }
+    }
+    
+    /**
      * 分析用户情绪并生成建议
      */
     suspend fun analyzeEmotionAndAdvise(

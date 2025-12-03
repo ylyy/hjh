@@ -4,8 +4,12 @@ import android.content.Context
 import com.productivity.assistant.ai.AIService
 import com.productivity.assistant.data.entity.Goal
 import com.productivity.assistant.data.entity.GoalType
+import com.productivity.assistant.data.repository.AppUsageRepository
 import com.productivity.assistant.data.repository.GoalRepository
 import com.productivity.assistant.data.repository.UsageStats
+import com.productivity.assistant.psychology.PsychologicalGoalRecommendation
+import com.productivity.assistant.psychology.SubjectiveNeedAnalyzer
+import com.productivity.assistant.agent.EnhancedPlannerAgent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -17,22 +21,60 @@ import java.util.*
  * 
  * 职责：
  * 1. 分析用户历史数据
- * 2. 制定个性化目标
- * 3. 生成每日工作计划
- * 4. 评估目标完成度
+ * 2. 理解用户的主体性需求（深层心理需求）
+ * 3. 制定基于心理需求的目标
+ * 4. 动态调整目标以适应需求变化
+ * 5. 生成每日工作计划
+ * 6. 评估目标完成度和心理满足度
  */
 class PlannerAgent(
     private val context: Context,
-    private val goalRepository: GoalRepository
+    private val goalRepository: GoalRepository,
+    private val appUsageRepository: AppUsageRepository? = null
 ) {
     
     private val scope = CoroutineScope(Dispatchers.Default)
     private val aiService = AIService(context)
     
+    // 增强的策划Agent（基于心理需求）
+    private val enhancedPlanner: EnhancedPlannerAgent? by lazy {
+        appUsageRepository?.let {
+            EnhancedPlannerAgent(
+                context = context,
+                goalRepository = goalRepository,
+                needAnalyzer = SubjectiveNeedAnalyzer(context, it, goalRepository)
+            )
+        }
+    }
+    
     /**
-     * 分析用户数据并生成建议目标（使用AI增强）
+     * 分析用户数据并生成建议目标（基于主体性需求）
+     * 
+     * 优先使用心理目标推荐系统，如果不可用则使用传统方法
      */
     suspend fun analyzeAndSuggestGoals(): List<GoalSuggestion> {
+        // 优先使用增强的心理目标系统
+        enhancedPlanner?.let { planner ->
+            val psychologicalRecommendations = planner.generatePsychologicalGoalRecommendations()
+            return psychologicalRecommendations.map { rec ->
+                GoalSuggestion(
+                    title = rec.goal.title,
+                    description = "${rec.psychologicalValue}\n${rec.recommendationReason}",
+                    type = rec.goal.type,
+                    targetValue = rec.goal.targetValue,
+                    unit = rec.goal.unit
+                )
+            }
+        }
+        
+        // 后备方案：使用传统方法
+        return analyzeAndSuggestGoalsTraditional()
+    }
+    
+    /**
+     * 传统方法：分析用户数据并生成建议目标（使用AI增强）
+     */
+    private suspend fun analyzeAndSuggestGoalsTraditional(): List<GoalSuggestion> {
         val activeGoals = goalRepository.getActiveGoals().first()
         val recentUsage = goalRepository.getRecentUsageStats(7) // 最近7天
         
