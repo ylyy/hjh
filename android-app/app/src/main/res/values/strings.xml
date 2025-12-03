@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AI生产力教练</string>
+    <string name="notification_channel_name">应用监控</string>
+    <string name="notification_channel_desc">监控应用使用情况并提供智能提醒</string>
+    <string name="service_notification_title">AI生产力教练正在运行</string>
+    <string name="service_notification_content">智能监控您的应用使用</string>
+</resources>
