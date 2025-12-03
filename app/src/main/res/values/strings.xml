@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">工作生活助手</string>
+    
+    <!-- 主界面 -->
+    <string name="today_work_time">今日工作时长</string>
+    <string name="entertainment_time">娱乐时长</string>
+    <string name="goals_completed">已完成目标</string>
+    <string name="current_status">当前状态</string>
+    
+    <!-- 目标设置 -->
+    <string name="set_goals">设置目标</string>
+    <string name="daily_goals">每日目标</string>
+    <string name="weekly_goals">每周目标</string>
+    <string name="goal_name">目标名称</string>
+    <string name="goal_description">目标描述</string>
+    <string name="save_goal">保存目标</string>
+    
+    <!-- 提醒消息 -->
+    <string name="reminder_title">工作提醒</string>
+    <string name="reminder_entertainment_time">你已经使用娱乐应用 %1$d 分钟了</string>
+    <string name="reminder_work_goal">你的工作目标还有 %1$d 个未完成</string>
+    <string name="reminder_achievement">太棒了！今天已完成 %1$d 小时工作</string>
+    
+    <!-- 权限 -->
+    <string name="permission_usage_stats_title">需要应用使用统计权限</string>
+    <string name="permission_usage_stats_message">为了监控应用使用情况，需要授予应用使用统计权限</string>
+    <string name="grant_permission">授予权限</string>
+    <string name="skip">跳过</string>
+    
+    <!-- 设置 -->
+    <string name="settings">设置</string>
+    <string name="entertainment_apps">娱乐应用</string>
+    <string name="work_hours">工作时间</string>
+    <string name="intervention_level">干预强度</string>
+    <string name="reminder_style">提醒方式</string>
+    
+    <!-- 统计 -->
+    <string name="statistics">统计</string>
+    <string name="daily_statistics">每日统计</string>
+    <string name="weekly_statistics">每周统计</string>
+    <string name="monthly_statistics">每月统计</string>
+    
+    <!-- 成就 -->
+    <string name="achievements">成就</string>
+    <string name="work_streak">连续工作</string>
+    <string name="efficiency_master">效率大师</string>
+    <string name="self_discipline">自律达人</string>
+</resources>

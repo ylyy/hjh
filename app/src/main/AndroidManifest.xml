@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 应用使用统计权限 -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" 
+        tools:ignore="ProtectedPermissions" />
+    
+    <!-- 通知权限 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- 前台服务权限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    
+    <!-- 网络权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- 系统窗口权限（用于悬浮窗） -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    
+    <!-- 唤醒锁定（保持CPU运行） -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application
+        android:name=".ProductivityApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ProductivityAssistant"
+        tools:targetApi="31">
+        
+        <!-- 主Activity -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ProductivityAssistant">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <!-- 目标设置Activity -->
+        <activity
+            android:name=".ui.goal.GoalSettingActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
+        
+        <!-- 统计Activity -->
+        <activity
+            android:name=".ui.statistics.StatisticsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.MainActivity" />
+        
+        <!-- 应用使用监控服务 -->
+        <service
+            android:name=".service.AppUsageMonitorService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+        
+        <!-- 提醒服务 -->
+        <service
+            android:name=".service.ReminderService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- 权限请求Activity -->
+        <activity
+            android:name=".ui.permission.PermissionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ProductivityAssistant.Transparent" />
+        
+    </application>
+
+</manifest>
