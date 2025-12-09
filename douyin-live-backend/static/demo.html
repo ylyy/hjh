@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抖音直播AIGC后台 - 控制面板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .status-running {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-stopped {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+        }
+        .log-item {
+            padding: 3px 0;
+            border-bottom: 1px solid #333;
+        }
+        .log-item.chat { color: #9cdcfe; }
+        .log-item.gift { color: #ffd700; }
+        .log-item.vote { color: #4ec9b0; }
+        .log-item.game { color: #ce9178; }
+        .log-item.error { color: #f44747; }
+        .vote-options {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .vote-option {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .vote-option .count {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .vote-option .label {
+            color: #666;
+            font-size: 12px;
+        }
+        .progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎮 抖音直播AIGC后台</h1>
+        <p>控制面板演示</p>
+    </div>
+    
+    <div class="container">
+        <div class="grid">
+            <!-- 直播间管理 -->
+            <div class="card">
+                <h3>📺 直播间管理</h3>
+                <div class="form-group">
+                    <label>直播间ID</label>
+                    <input type="text" id="roomId" value="demo_room" placeholder="输入直播间ID">
+                </div>
+                <div class="form-group">
+                    <label>直播间名称</label>
+                    <input type="text" id="roomName" value="演示直播间" placeholder="输入名称">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="createRoom()">创建直播间</button>
+                    <button class="btn btn-success" onclick="startRoom()">启动</button>
+                    <button class="btn btn-danger" onclick="stopRoom()">停止</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    状态: <span id="roomStatus" class="status status-stopped">未运行</span>
+                </div>
+            </div>
+            
+            <!-- 游戏管理 -->
+            <div class="card">
+                <h3>🎭 游戏管理</h3>
+                <div class="form-group">
+                    <label>游戏类型</label>
+                    <select id="gameType">
+                        <option value="story">AI小说直播</option>
+                        <option value="puzzle">AI解谜游戏</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>游戏配置 (JSON)</label>
+                    <textarea id="gameConfig" rows="3">{"style": "悬疑", "vote_duration": 30}</textarea>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="createGame()">创建游戏</button>
+                    <button class="btn btn-success" onclick="startGame()">启动</button>
+                    <button class="btn btn-warning" onclick="pauseGame()">暂停</button>
+                    <button class="btn btn-danger" onclick="stopGame()">停止</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <!-- 弹幕模拟 -->
+            <div class="card">
+                <h3>💬 弹幕模拟</h3>
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="danmuUser" value="测试用户">
+                </div>
+                <div class="form-group">
+                    <label>弹幕内容</label>
+                    <input type="text" id="danmuContent" placeholder="输入弹幕内容">
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="sendDanmu()">发送弹幕</button>
+                    <button class="btn btn-primary" onclick="sendVote(1)">投票1</button>
+                    <button class="btn btn-primary" onclick="sendVote(2)">投票2</button>
+                    <button class="btn btn-primary" onclick="sendVote(3)">投票3</button>
+                </div>
+            </div>
+            
+            <!-- 礼物模拟 -->
+            <div class="card">
+                <h3>🎁 礼物模拟</h3>
+                <div class="form-group">
+                    <label>礼物名称</label>
+                    <select id="giftName">
+                        <option value="小心心">小心心 (1元)</option>
+                        <option value="棒棒糖">棒棒糖 (5元)</option>
+                        <option value="大火箭">大火箭 (100元)</option>
+                        <option value="嘉年华">嘉年华 (1000元)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>礼物留言</label>
+                    <input type="text" id="giftMessage" placeholder="打赏留言">
+                </div>
+                <button class="btn btn-warning" onclick="sendGift()">送出礼物</button>
+            </div>
+        </div>
+        
+        <!-- 投票状态 -->
+        <div class="card">
+            <h3>🗳️ 实时投票</h3>
+            <div id="voteContainer">
+                <p style="color: #666;">等待投票开始...</p>
+            </div>
+        </div>
+        
+        <!-- 实时日志 -->
+        <div class="card">
+            <h3>📝 实时日志</h3>
+            <div class="log-container" id="logContainer">
+                <div class="log-item">等待连接...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.origin + '/api';
+        let ws = null;
+        
+        // 添加日志
+        function addLog(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const item = document.createElement('div');
+            item.className = `log-item ${type}`;
+            item.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(item);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // API请求
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            };
+            if (data) options.body = JSON.stringify(data);
+            
+            try {
+                const response = await fetch(API_BASE + endpoint, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                addLog(`API错误: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        // 连接WebSocket
+        function connectWS() {
+            const roomId = document.getElementById('roomId').value;
+            const wsUrl = `ws://${window.location.host}/api/ws/room/${roomId}`;
+            
+            if (ws) ws.close();
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                addLog('WebSocket已连接', 'game');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleWSMessage(data);
+            };
+            
+            ws.onerror = () => {
+                addLog('WebSocket连接错误', 'error');
+            };
+            
+            ws.onclose = () => {
+                addLog('WebSocket已断开', 'error');
+            };
+        }
+        
+        // 处理WebSocket消息
+        function handleWSMessage(data) {
+            switch(data.type) {
+                case 'connected':
+                    addLog(`已连接到房间: ${data.room_id}`, 'game');
+                    break;
+                case 'danmu':
+                    addLog(`[弹幕] ${data.data.username}: ${data.data.content}`, 'chat');
+                    break;
+                case 'gift':
+                    addLog(`[礼物] ${data.data.username} 送出 ${data.data.gift_name}`, 'gift');
+                    break;
+                case 'vote_update':
+                    updateVoteDisplay(data.data);
+                    addLog(`[投票] 收到投票更新`, 'vote');
+                    break;
+                case 'game_event':
+                    addLog(`[游戏] ${data.event}: ${JSON.stringify(data.data).substring(0, 100)}`, 'game');
+                    break;
+            }
+        }
+        
+        // 更新投票显示
+        function updateVoteDisplay(voteData) {
+            const container = document.getElementById('voteContainer');
+            if (!voteData || !voteData.options) {
+                container.innerHTML = '<p style="color: #666;">等待投票开始...</p>';
+                return;
+            }
+            
+            const total = voteData.total_votes || 1;
+            let html = '<div class="vote-options">';
+            
+            for (const [optId, data] of Object.entries(voteData.options)) {
+                const percent = Math.round((data.votes / total) * 100);
+                html += `
+                    <div class="vote-option">
+                        <div class="count">${data.votes}</div>
+                        <div class="label">选项 ${optId}</div>
+                        <div class="progress-bar">
+                            <div class="fill" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // 直播间操作
+        async function createRoom() {
+            const result = await apiRequest('/rooms', 'POST', {
+                room_id: document.getElementById('roomId').value,
+                name: document.getElementById('roomName').value
+            });
+            if (result) addLog(`创建直播间: ${JSON.stringify(result)}`, 'game');
+        }
+        
+        async function startRoom() {
+            const roomId = document.getElementById('roomId').value;
+            const result = await apiRequest(`/rooms/${roomId}/start`, 'POST');
+            if (result) {
+                addLog(`启动直播间: ${result.message}`, 'game');
+                document.getElementById('roomStatus').className = 'status status-running';
+                document.getElementById('roomStatus').textContent = '运行中';
+                connectWS();
+            }
+        }
+        
+        async function stopRoom() {
+            const roomId = document.getElementById('roomId').value;
+            const result = await apiRequest(`/rooms/${roomId}/stop`, 'POST');
+            if (result) {
+                addLog(`停止直播间: ${result.message}`, 'game');
+                document.getElementById('roomStatus').className = 'status status-stopped';
+                document.getElementById('roomStatus').textContent = '已停止';
+            }
+        }
+        
+        // 游戏操作
+        async function createGame() {
+            const roomId = document.getElementById('roomId').value;
+            let config = {};
+            try {
+                config = JSON.parse(document.getElementById('gameConfig').value);
+            } catch(e) {}
+            
+            const result = await apiRequest('/games/create', 'POST', {
+                room_id: roomId,
+                game_type: document.getElementById('gameType').value,
+                config: config
+            });
+            if (result) addLog(`创建游戏: ${result.message}`, 'game');
+        }
+        
+        async function startGame() {
+            const roomId = document.getElementById('roomId').value;
+            const result = await apiRequest(`/games/${roomId}/start`, 'POST');
+            if (result) addLog(`启动游戏: ${result.message}`, 'game');
+        }
+        
+        async function pauseGame() {
+            const roomId = document.getElementById('roomId').value;
+            const result = await apiRequest(`/games/${roomId}/pause`, 'POST');
+            if (result) addLog(`暂停游戏: ${result.message}`, 'game');
+        }
+        
+        async function stopGame() {
+            const roomId = document.getElementById('roomId').value;
+            const result = await apiRequest(`/games/${roomId}/stop`, 'POST');
+            if (result) addLog(`停止游戏: ${JSON.stringify(result.result).substring(0, 200)}`, 'game');
+        }
+        
+        // 弹幕操作
+        async function sendDanmu() {
+            const result = await apiRequest('/danmu/inject', 'POST', {
+                room_id: document.getElementById('roomId').value,
+                username: document.getElementById('danmuUser').value,
+                content: document.getElementById('danmuContent').value
+            });
+            if (result) addLog(`发送弹幕: ${result.message}`, 'chat');
+        }
+        
+        async function sendVote(option) {
+            const result = await apiRequest('/danmu/inject', 'POST', {
+                room_id: document.getElementById('roomId').value,
+                username: document.getElementById('danmuUser').value,
+                content: String(option)
+            });
+            if (result) addLog(`投票 ${option}: ${result.message}`, 'vote');
+        }
+        
+        // 礼物操作
+        async function sendGift() {
+            const giftMap = {
+                '小心心': 1,
+                '棒棒糖': 5,
+                '大火箭': 100,
+                '嘉年华': 1000
+            };
+            const giftName = document.getElementById('giftName').value;
+            
+            const result = await apiRequest('/danmu/inject/gift', 'POST', {
+                room_id: document.getElementById('roomId').value,
+                username: document.getElementById('danmuUser').value,
+                gift_name: giftName,
+                gift_count: 1,
+                gift_value: giftMap[giftName] || 1,
+                message: document.getElementById('giftMessage').value
+            });
+            if (result) addLog(`送出礼物: ${giftName}`, 'gift');
+        }
+        
+        // 页面加载完成
+        addLog('控制面板已加载', 'game');
+    </script>
+</body>
+</html>
