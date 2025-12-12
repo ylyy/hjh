@@ -52,10 +52,12 @@ function main() {
 function clickApplyButtons() {
     let count = 0;
     
-    for (let keyword of CONFIG.applyKeywords) {
+    for (let i = 0; i < CONFIG.applyKeywords.length; i++) {
+        let keyword = CONFIG.applyKeywords[i];
         let buttons = text(keyword).find();
         
-        for (let btn of buttons) {
+        for (let j = 0; j < buttons.length; j++) {
+            let btn = buttons[j];
             if (btn && btn.visibleToUser() && !shouldSkip(btn)) {
                 log("点击: " + keyword);
                 
@@ -82,7 +84,8 @@ function shouldSkip(node) {
     let parent = node.parent();
     let parentText = parent ? (parent.text() || "") : "";
     
-    for (let kw of CONFIG.skipKeywords) {
+    for (let i = 0; i < CONFIG.skipKeywords.length; i++) {
+        let kw = CONFIG.skipKeywords[i];
         if (text.includes(kw) || parentText.includes(kw)) return true;
     }
     return false;
@@ -91,7 +94,8 @@ function shouldSkip(node) {
 function handlePopup() {
     sleep(500);
     let confirms = ["确定", "确认", "知道了", "好的", "提交"];
-    for (let c of confirms) {
+    for (let i = 0; i < confirms.length; i++) {
+        let c = confirms[i];
         let btn = text(c).findOne(300);
         if (btn) {
             btn.click();
@@ -106,7 +110,10 @@ function scrollDown() {
     swipe(w/2, h*0.7, w/2, h*0.3, 400);
 }
 
-events.on("volume_up", () => { engines.stopAll(); exit(); });
+events.on("volume_up", function() { 
+    engines.stopAll(); 
+    exit(); 
+});
 log("按音量+键停止脚本");
 
 main();
