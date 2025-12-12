@@ -72,11 +72,15 @@ function clickApplyButtons() {
                                     btnParent.click();
                                 } else {
                                     var b = btn.bounds();
-                                    click(b.centerX(), b.centerY());
+                                    var x = b.centerX();
+                                    var y = b.centerY();
+                                    click(x, y);
                                 }
                             } else {
                                 var b = btn.bounds();
-                                click(b.centerX(), b.centerY());
+                                var x = b.centerX();
+                                var y = b.centerY();
+                                click(x, y);
                             }
                         }
                         
@@ -134,13 +138,20 @@ function handlePopup() {
 function scrollDown() {
     var h = device.height;
     var w = device.width;
-    swipe(w/2, h*0.7, w/2, h*0.3, 400);
+    var startX = w / 2;
+    var startY = h * 0.7;
+    var endX = w / 2;
+    var endY = h * 0.3;
+    var duration = 400;
+    swipe(startX, startY, endX, endY, duration);
 }
 
-events.on("volume_up", function() { 
-    engines.stopAll(); 
-    exit(); 
-});
+function stopScript() {
+    engines.stopAll();
+    exit();
+}
+
+events.on("volume_up", stopScript);
 log("按音量+键停止脚本");
 
 main();
