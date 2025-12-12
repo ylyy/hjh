@@ -7,7 +7,7 @@
 
 "auto";
 
-const CONFIG = {
+var CONFIG = {
     clickDelay: 1500,
     scrollDelay: 1000,
     maxScrollCount: 50,
@@ -21,13 +21,13 @@ function main() {
     log("请确保已打开'免费试'页面");
     sleep(2000);
     
-    let totalClicked = 0;
-    let scrollCount = 0;
-    let noNewCount = 0;
+    var totalClicked = 0;
+    var scrollCount = 0;
+    var noNewCount = 0;
     
     while (scrollCount < CONFIG.maxScrollCount) {
-        let clicked = clickApplyButtons();
-        totalClicked += clicked;
+        var clicked = clickApplyButtons();
+        totalClicked = totalClicked + clicked;
         
         if (clicked === 0) {
             noNewCount++;
@@ -50,27 +50,45 @@ function main() {
 }
 
 function clickApplyButtons() {
-    let count = 0;
+    var count = 0;
     
-    for (let keyword of CONFIG.applyKeywords) {
-        let buttons = text(keyword).find();
+    for (var i = 0; i < CONFIG.applyKeywords.length; i++) {
+        var keyword = CONFIG.applyKeywords[i];
+        var buttons = text(keyword).find();
         
-        for (let btn of buttons) {
-            if (btn && btn.visibleToUser() && !shouldSkip(btn)) {
-                log("点击: " + keyword);
-                
-                if (btn.clickable()) {
-                    btn.click();
-                } else if (btn.parent() && btn.parent().clickable()) {
-                    btn.parent().click();
-                } else {
-                    let b = btn.bounds();
-                    click(b.centerX(), b.centerY());
+        for (var j = 0; j < buttons.length; j++) {
+            var btn = buttons[j];
+            if (btn) {
+                if (btn.visibleToUser()) {
+                    if (!shouldSkip(btn)) {
+                        log("点击: " + keyword);
+                        
+                        if (btn.clickable()) {
+                            btn.click();
+                        } else {
+                            var btnParent = btn.parent();
+                            if (btnParent) {
+                                if (btnParent.clickable()) {
+                                    btnParent.click();
+                                } else {
+                                    var b = btn.bounds();
+                                    var x = b.centerX();
+                                    var y = b.centerY();
+                                    click(x, y);
+                                }
+                            } else {
+                                var b = btn.bounds();
+                                var x = b.centerX();
+                                var y = b.centerY();
+                                click(x, y);
+                            }
+                        }
+                        
+                        count++;
+                        sleep(CONFIG.clickDelay);
+                        handlePopup();
+                    }
                 }
-                
-                count++;
-                sleep(CONFIG.clickDelay);
-                handlePopup();
             }
         }
     }
@@ -78,21 +96,38 @@ function clickApplyButtons() {
 }
 
 function shouldSkip(node) {
-    let text = node.text() || "";
-    let parent = node.parent();
-    let parentText = parent ? (parent.text() || "") : "";
+    var text = node.text();
+    if (!text) {
+        text = "";
+    }
     
-    for (let kw of CONFIG.skipKeywords) {
-        if (text.includes(kw) || parentText.includes(kw)) return true;
+    var parent = node.parent();
+    var parentText = "";
+    if (parent) {
+        var pText = parent.text();
+        if (pText) {
+            parentText = pText;
+        }
+    }
+    
+    for (var i = 0; i < CONFIG.skipKeywords.length; i++) {
+        var kw = CONFIG.skipKeywords[i];
+        if (text.includes(kw)) {
+            return true;
+        }
+        if (parentText.includes(kw)) {
+            return true;
+        }
     }
     return false;
 }
 
 function handlePopup() {
     sleep(500);
-    let confirms = ["确定", "确认", "知道了", "好的", "提交"];
-    for (let c of confirms) {
-        let btn = text(c).findOne(300);
+    var confirms = ["确定", "确认", "知道了", "好的", "提交"];
+    for (var i = 0; i < confirms.length; i++) {
+        var c = confirms[i];
+        var btn = text(c).findOne(300);
         if (btn) {
             btn.click();
             sleep(300);
@@ -101,12 +136,22 @@ function handlePopup() {
 }
 
 function scrollDown() {
-    let h = device.height;
-    let w = device.width;
-    swipe(w/2, h*0.7, w/2, h*0.3, 400);
+    var h = device.height;
+    var w = device.width;
+    var startX = w / 2;
+    var startY = h * 0.7;
+    var endX = w / 2;
+    var endY = h * 0.3;
+    var duration = 400;
+    swipe(startX, startY, endX, endY, duration);
 }
 
-events.on("volume_up", () => { engines.stopAll(); exit(); });
+function stopScript() {
+    engines.stopAll();
+    exit();
+}
+
+events.on("volume_up", stopScript);
 log("按音量+键停止脚本");
 
 main();
